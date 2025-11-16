@@ -1,0 +1,325 @@
+<!doctype html>
+
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>پیش‌بینی درآمد — آپارات / یوتیوب</title>
+  <style>
+    /* Dark theme */
+    :root{
+      --bg:#0b0f13; /* very dark */
+      --card:#0f1720;
+      --muted:#9aa6b2;
+      --accent:#7c5cff;
+      --accent-2:#00d4ff;
+      --glass: rgba(255,255,255,0.03);
+      --success:#1dd1a1;
+      --danger:#ff6b6b;
+      --glass-border: rgba(255,255,255,0.04);
+    }
+    *{box-sizing:border-box;font-family:Inter, Roboto, "Vazirmatn", system-ui, -apple-system, 'Segoe UI', sans-serif}
+    html,body{height:100%;background:linear-gradient(180deg,#071118 0%, var(--bg) 100%);color:#e6eef6;margin:0;padding:24px}
+    .container{max-width:980px;margin:0 auto}
+    header{display:flex;gap:16px;align-items:center;margin-bottom:18px}
+    .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:700}
+    h1{margin:0;font-size:18px}
+    p.lead{margin:0;color:var(--muted);font-size:13px}.grid{display:grid;grid-template-columns:1fr 360px;gap:18px}
+.card{background:var(--card);padding:14px;border-radius:12px;border:1px solid var(--glass-border);box-shadow: 0 4px 18px rgba(0,0,0,0.6)}
+label{display:block;margin-bottom:6px;font-size:13px;color:var(--muted)}
+input[type=text], input[type=number], select{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);background:var(--bg);color:inherit}
+.row{display:flex;gap:10px}
+.row .col{flex:1}
+.btn{display:inline-block;padding:10px 12px;border-radius:10px;background:linear-gradient(90deg,var(--accent),var(--accent-2));border:none;color:#051024;cursor:pointer;font-weight:600}
+.btn.ghost{background:transparent;border:1px solid var(--glass-border;color:var(--accent));color:var(--accent)}
+.switch{display:inline-flex;align-items:center;gap:8px}
+.result{margin-top:12px;padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent)}
+.muted{color:var(--muted);font-size:13px}
+pre{white-space:pre-wrap;color:var(--muted);font-size:13px}
+.online{display:flex;gap:8px;align-items:center}
+.chip{padding:6px 8px;border-radius:999px;background:rgba(255,255,255,0.03);font-size:12px}
+
+footer{margin-top:18px;color:var(--muted);font-size:13px}
+
+/* responsive */
+@media (max-width:920px){
+  .grid{grid-template-columns:1fr;}
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">AY</div>
+      <div>
+        <h1>پیش‌بینی درآمد — آپارات / یوتیوب</h1>
+        <p class="lead">صفحه‌ای برای محاسبهٔ تقریبی درآمد بر اساس میانگین بازدید — تم تاریک، بخش‌های آنلاین</p>
+      </div>
+    </header><div class="grid">
+  <!-- form -->
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <strong>ورودی‌ها</strong>
+      <div class="online">
+        <span class="chip" id="exchange-chip">نرخ دلار: بارگذاری…</span>
+        <button class="btn" id="fetchRate">بروزرسانی</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:10px">
+      <label>پلتفرم</label>
+      <select id="platform">
+        <option value="aparat">آپارات</option>
+        <option value="youtube">یوتیوب</option>
+      </select>
+    </div>
+
+    <div style="margin-bottom:10px">
+      <label>نام کانال</label>
+      <input id="channel" type="text" placeholder="مثال: کانال من" />
+    </div>
+
+    <div class="row" style="margin-bottom:10px">
+      <div class="col">
+        <label>میانگین بازدید</label>
+        <input id="views" type="number" inputmode="numeric" placeholder="مثال: 10000" />
+      </div>
+      <div style="width:140px">
+        <label>بازه‌ی بازدید</label>
+        <select id="period">
+          <option value="daily">روزانه</option>
+          <option value="monthly" selected>ماهیانه</option>
+          <option value="yearly">سالانه</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row" style="align-items:center;margin-bottom:10px">
+      <div class="col">
+        <label>نرخ دلار (تومان)</label>
+        <input id="exchange" type="number" placeholder="مثال: 111550" />
+      </div>
+      <div style="width:120px">
+        <label>واحد نمایش</label>
+        <select id="unitOrder">
+          <option value="default">پیش‌فرض</option>
+          <option value="aparat">آپارات: تومان→دلار</option>
+          <option value="youtube">یوتیوب: دلار→تومان</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn" id="calc">محاسبه کن</button>
+      <button class="btn" id="downloadJson">دانلود JSON</button>
+      <button class="btn" id="copyReport">کپی گزارش</button>
+      <button class="btn" id="reset">پاک‌کردن</button>
+    </div>
+
+    <div class="result" id="notes">
+      <div class="muted">توجه: این ابزار تقریبی است. مقادیر پیش‌فرض برای آپارات: ۵۰۰–۳۰۰۰ تومان به ازای هر ۱۰۰۰ بازدید. یوتیوب: ۱–۵ دلار CPM قبل از کسر سهم یوتیوب (پیش‌فرض سهم یوتیوب ۴۵%).</div>
+    </div>
+  </div>
+
+  <!-- output -->
+  <div class="card" id="outputCard">
+    <strong>گزارش</strong>
+    <div id="reportArea" style="margin-top:10px">
+      <p class="muted">هنوز چیزی محاسبه نشده — «محاسبه کن» را بزن.</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="muted">می‌تونی این فایل را در GitHub Pages آپلود کنی (فایل index.html) تا سایت آنلاین داشته باشی. من می‌تونم مراحل گام‌به‌گام هم بنویسم.</div>
+</footer>
+
+  </div>  <script>
+    // defaults
+    const DEFAULT_EXCHANGE = 111550; // تومان
+    const APARAT_RPM_MIN = 500;
+    const APARAT_RPM_MAX = 3000;
+    const YT_CPM_MIN = 1.0;
+    const YT_CPM_MAX = 5.0;
+    const YT_CUT = 0.45; // سهم یوتیوب
+
+    // helpers
+    function fmtToman(x){ return x === Infinity || isNaN(x) ? '-' : x.toLocaleString('fa-IR',{maximumFractionDigits:0}) + ' تومان'; }
+    function fmtUSD(x){ return x === Infinity || isNaN(x) ? '-' : '$' + Number(x).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+    function computeAparat(views, exchange){
+      const minT = (views/1000)*APARAT_RPM_MIN;
+      const maxT = (views/1000)*APARAT_RPM_MAX;
+      const minU = minT / exchange;
+      const maxU = maxT / exchange;
+      return {minT, maxT, minU, maxU};
+    }
+    function computeYoutube(views, exchange){
+      const rawMin = (views/1000)*YT_CPM_MIN;
+      const rawMax = (views/1000)*YT_CPM_MAX;
+      const finalMinUSD = rawMin * (1 - YT_CUT);
+      const finalMaxUSD = rawMax * (1 - YT_CUT);
+      const minT = finalMinUSD * exchange;
+      const maxT = finalMaxUSD * exchange;
+      return {minUSD: finalMinUSD, maxUSD: finalMaxUSD, minT, maxT};
+    }
+
+    function daysInMonth(){ return 30.4375; }
+
+    function convertViews(views, from, to){
+      if(from===to) return views;
+      let perDay;
+      if(from==='daily') perDay = views;
+      else if(from==='monthly') perDay = views / daysInMonth();
+      else perDay = views / 365.0;
+
+      if(to==='daily') return perDay;
+      if(to==='monthly') return perDay * daysInMonth();
+      return perDay * 365.0;
+    }
+
+    // UI bindings
+    const platformEl = document.getElementById('platform');
+    const channelEl = document.getElementById('channel');
+    const viewsEl = document.getElementById('views');
+    const periodEl = document.getElementById('period');
+    const exchangeEl = document.getElementById('exchange');
+    const calcBtn = document.getElementById('calc');
+    const reportArea = document.getElementById('reportArea');
+    const exchangeChip = document.getElementById('exchange-chip');
+    const fetchRateBtn = document.getElementById('fetchRate');
+    const downloadJsonBtn = document.getElementById('downloadJson');
+    const copyReportBtn = document.getElementById('copyReport');
+    const resetBtn = document.getElementById('reset');
+    const unitOrderEl = document.getElementById('unitOrder');
+
+    // initialize
+    exchangeEl.value = DEFAULT_EXCHANGE;
+    exchangeChip.textContent = 'نرخ دلار: ' + DEFAULT_EXCHANGE.toLocaleString('fa-IR') + ' تومان (پیش‌فرض)';
+
+    async function fetchExchangeRate(){
+      exchangeChip.textContent = 'بارگذاری نرخ...';
+      try{
+        // We'll try exchangerate.host — it returns rates in various currencies (USD → IRR), IRR = Iranian rial
+        // Toman = Rial / 10. Note: API doesn't always include IRR due to sanctions; we try multiple fallbacks.
+        const res = await fetch('https://api.exchangerate.host/latest?base=USD&symbols=IRR,USD');
+        const data = await res.json();
+        if(data && data.rates && data.rates.IRR){
+          const rialsPerUsd = data.rates.IRR; // e.g. 42000000 (IRR)
+          const tomanPerUsd = rialsPerUsd / 10.0; // تبدیل ریال به تومان
+          exchangeEl.value = Math.round(tomanPerUsd);
+          exchangeChip.textContent = 'نرخ دلار: ' + Number(tomanPerUsd).toLocaleString('fa-IR') + ' تومان (از API)';
+          return tomanPerUsd;
+        }
+      }catch(e){
+        console.warn('fetch failed', e);
+      }
+      exchangeChip.textContent = 'نرخ دلار: ' + exchangeEl.value.toLocaleString('fa-IR') + ' تومان (پیش‌فرض)';
+      return Number(exchangeEl.value);
+    }
+
+    fetchRateBtn.addEventListener('click',()=>{ fetchExchangeRate(); });
+
+    function buildReportObject(platform, channel, views, period, exchange){
+      const report = {meta:{platform,channel,views_input:views,views_period:period,exchange,generated_at:new Date().toISOString()},results:{}};
+      ['daily','monthly','yearly'].forEach(p => {
+        const v = convertViews(views, period, p);
+        if(platform==='aparat'){
+          const r = computeAparat(v, exchange);
+          report.results[p] = {views:v, min_toman:r.minT, max_toman:r.maxT, min_usd:r.minU, max_usd:r.maxU};
+        }else{
+          const r = computeYoutube(v, exchange);
+          report.results[p] = {views:v, min_usd:r.minUSD, max_usd:r.maxUSD, min_toman:r.minT, max_toman:r.maxT};
+        }
+      });
+      return report;
+    }
+
+    function renderReport(report){
+      const meta = report.meta;
+      const platform = meta.platform;
+      const channel = meta.channel;
+      const orderSetting = unitOrderEl.value;
+      let html = `<div class=\"muted\">کانال: <strong>${channel}</strong> — پلتفرم: <strong>${platform}</strong></div>`;
+      html += `<div class=\"muted\">بازدید ورودی: ${Number(meta.views_input).toLocaleString('fa-IR')} (${meta.views_period}) — نرخ دلار: ${Number(meta.exchange).toLocaleString('fa-IR')} تومان</div>`;
+
+      Object.keys(report.results).forEach(period => {
+        const label = period==='daily' ? 'روزانه' : (period==='monthly' ? 'ماهیانه' : 'سالانه');
+        const block = report.results[period];
+        html += `<div style=\"margin-top:10px;border-top:1px dashed rgba(255,255,255,0.03);padding-top:8px\">`;
+        html += `<div style=\"font-weight:600;margin-bottom:6px\">${label} — بازدید: ${Number(block.views).toLocaleString('fa-IR')}</div>`;
+
+        if(platform==='aparat'){
+          // show toman then usd
+          html += `<div>حداقل: <strong>${fmtToman(block.min_toman)}</strong> — حداکثر: <strong>${fmtToman(block.max_toman)}</strong></div>`;
+          html += `<div class=\"muted\">(به دلار ≈ ${fmtUSD(block.min_usd)} — ${fmtUSD(block.max_usd)})</div>`;
+        }else{
+          // youtube: usd then toman
+          html += `<div>حداقل: <strong>${fmtUSD(block.min_usd)}</strong> — حداکثر: <strong>${fmtUSD(block.max_usd)}</strong></div>`;
+          html += `<div class=\"muted\">(به تومان ≈ ${fmtToman(block.min_toman)} — ${fmtToman(block.max_toman)})</div>`;
+        }
+        html += `</div>`;
+      });
+
+      html += `<div style=\"margin-top:12px\"><button class=\"btn\" id=\"downloadJsonInner\">دانلود JSON</button> <button class=\"btn\" id=\"copyReportInner\">کپی</button></div>`;
+
+      reportArea.innerHTML = html;
+
+      // inner buttons
+      const dBtn = document.getElementById('downloadJsonInner');
+      const cBtn = document.getElementById('copyReportInner');
+      dBtn && dBtn.addEventListener('click',()=>{ downloadJSON(report); });
+      cBtn && cBtn.addEventListener('click',()=>{ navigator.clipboard && navigator.clipboard.writeText(JSON.stringify(report,null,2)); alert('گزارش در کلیپ‌بورد کپی شد'); });
+    }
+
+    function downloadJSON(obj){
+      const blob = new Blob([JSON.stringify(obj,null,2)],{type:'application/json;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `income_report_${obj.meta.platform}_${obj.meta.channel.replace(/\s+/g,'_')}.json`;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    }
+
+    calcBtn.addEventListener('click',()=>{
+      const platform = platformEl.value;
+      const channel = channelEl.value || 'بدون نام';
+      const views = Number(viewsEl.value) || 0;
+      const period = periodEl.value;
+      const exchange = Number(exchangeEl.value) || DEFAULT_EXCHANGE;
+      const rep = buildReportObject(platform, channel, views, period, exchange);
+      renderReport(rep);
+    });
+
+    downloadJsonBtn.addEventListener('click', ()=>{
+      const platform = platformEl.value;
+      const channel = channelEl.value || 'بدون نام';
+      const views = Number(viewsEl.value) || 0;
+      const period = periodEl.value;
+      const exchange = Number(exchangeEl.value) || DEFAULT_EXCHANGE;
+      const rep = buildReportObject(platform, channel, views, period, exchange);
+      downloadJSON(rep);
+    });
+
+    copyReportBtn.addEventListener('click', ()=>{
+      const platform = platformEl.value;
+      const channel = channelEl.value || 'بدون نام';
+      const views = Number(viewsEl.value) || 0;
+      const period = periodEl.value;
+      const exchange = Number(exchangeEl.value) || DEFAULT_EXCHANGE;
+      const rep = buildReportObject(platform, channel, views, period, exchange);
+      navigator.clipboard && navigator.clipboard.writeText(JSON.stringify(rep,null,2));
+      alert('گزارش در کلیپ‌بورد کپی شد');
+    });
+
+    resetBtn.addEventListener('click', ()=>{
+      channelEl.value=''; viewsEl.value=''; periodEl.value='monthly'; exchangeEl.value=DEFAULT_EXCHANGE; reportArea.innerHTML='<p class="muted">هنوز چیزی محاسبه نشده — «محاسبه کن» را بزن.</p>';
+    });
+
+    // initial sample
+    window.addEventListener('load', ()=>{
+      // set default sample: 10005 monthly if user leaves empty
+      // no automatic calc — let user decide
+    });
+  </script></body>
+</html>
